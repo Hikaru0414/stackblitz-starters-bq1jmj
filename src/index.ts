@@ -3,7 +3,7 @@ import * as readline from 'readline';
 import { Scanner, Token } from './scanner';
 
 class Lox {
-  // private static hadError: boolean = false;
+  private static hadError: boolean = false;
 
   static main(args: string[]): void {
     if (args.length > 1) {
@@ -21,6 +21,7 @@ class Lox {
       const bytes = await fs.promises.readFile(filePath);
       const content = bytes.toString('utf-8');
       this.run(content);
+      if (this.hadError) process.exit(65);
     } catch (err) {
       console.error(`Could not read file: ${filePath}`);
       process.exit(65);
@@ -39,6 +40,7 @@ class Lox {
           rl.close();
         } else {
           this.run(line);
+          this.hadError = false;
           prompt();
         }
       });
@@ -62,14 +64,14 @@ class Lox {
     }
   }
 
-  // static error(line: number, message: string): void {
-  //     this.report(line, "", message);
-  // }
+  static error(line: number, message: string): void {
+    this.report(line, "", message);
+  }
 
-  // private static report(line: number, where: string, message: string): void {
-  //     console.error(`[line ${line}] Error${where}: ${message}`);
-  //     this.hadError = true;
-  // }
+  private static report(line: number, where: string, message: string): void {
+    console.error(`[line ${line}] Error${where}: ${message}`);
+    this.hadError = true;
+  }
 }
 
 // エントリーポイントの設定
