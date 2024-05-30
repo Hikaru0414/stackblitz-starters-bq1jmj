@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as readline from 'readline';
 import { Scanner, Token } from './scanner';
 
-class Lox {
+export class Lox {
   private static hadError: boolean = false;
 
   static main(args: string[]): void {

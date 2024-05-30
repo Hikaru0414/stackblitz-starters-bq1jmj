@@ -1,3 +1,5 @@
+import { Lox } from './index'
+
 enum TokenType {
   // Single-character tokens.
   LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
@@ -19,7 +21,7 @@ enum TokenType {
   EOF
 }
 
-class Token {
+export class Token {
   readonly type: TokenType;
   readonly lexeme: string;
   readonly literal: any;
@@ -37,7 +39,7 @@ class Token {
   }
 }
 
-class Scanner {
+export class Scanner {
   private readonly source: string;
   private readonly tokens: Token[] = [];
   private start = 0;
@@ -81,12 +83,38 @@ class Scanner {
           this.addToken(TokenType.SLASH);
         }
         break;
+      case ' ':
+      case '\r':
+      case '\t':
+        break;
+      case '\n':
+        this.line++;
+        break;
+      case '"': this.string(); break;
       default:
-        // Assuming Lox.error is a function defined elsewhere
-        // Replace with appropriate error handling
-        console.error(`Unexpected character at line ${this.line}`);
+        Lox.error(this.line, `Unexpected character: ${c}`)
         break;
     }
+  }
+
+  private string(): void {
+    while (this.peek() != '"' && !this.isAtEnd()) {
+      if (this.peek() == '\n') this.line++;
+      this.advance();
+    }
+    if (this.isAtEnd()) {
+      Lox.error(this.line, "Unterminated string.");
+      return;
+    }
+    // The closing ".
+    this.advance();
+    // Trim the surrounding quotes.
+    const value = this.source.substring(this.start + 1, this.current - 1);
+    this.addToken(TokenType.STRING, value);
+  }
+
+  private number() {
+
   }
 
   private match(expected: string): boolean {
@@ -113,6 +141,8 @@ class Scanner {
     const text = this.source.substring(this.start, this.current);
     this.tokens.push(new Token(type, text, literal, this.line));
   }
-}
 
-export { Scanner, Token };
+  private isDigit(c: string): boolean {
+    return c >= '0' && c <= '9';
+  }
+}
